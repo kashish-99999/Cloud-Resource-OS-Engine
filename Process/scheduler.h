@@ -1,0 +1,10 @@
+#ifndef SCHEDULER_H
+#define SCHEDULER_H
+
+#include "process.h"
+
+void enqueueReady(PCB *p);
+PCB* dequeueReady();
+void runScheduler();
+
+#endif
