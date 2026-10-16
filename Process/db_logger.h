@@ -3,6 +3,7 @@
 
 #include "process.h"
 
-void logTransition(int pid, State oldState, State newState, int remaining, float progress);
+void logProcessResult(Process *p);
+
 
 #endif

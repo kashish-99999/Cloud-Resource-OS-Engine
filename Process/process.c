@@ -1,35 +1,49 @@
-#include "process.h"
-#include "db_logger.h"
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include "process.h"
 
-void admitProcess(PCB *p) {
-    logTransition(p->pid, p->state, READY, p->remaining_time, p->progress);
-    p->state = READY;
+char* getTimeStr() {
+    static char buffer[30];
+    time_t now = time(NULL);
+    struct tm *t = localtime(&now);
+    strftime(buffer, sizeof(buffer), "%H:%M:%S", t);
+    return buffer;
 }
 
-void dispatchProcess(PCB *p) {
-    logTransition(p->pid, p->state, RUNNING, p->remaining_time, p->progress);
-    p->state = RUNNING;
+void displayPCB(Process *p) {
+    const char *state_names[] = {
+        "NEW","READY","RUNNING","WAITING",
+        "SUSP_READY","SUSP_WAITING","TERMINATED"
+    };
+    printf("📄 PCB Info → PID=%d | Name=%s | State=%s | Burst=%d | Remaining=%d | Priority=%d | Completion=%d%%\n",
+           p->pid, p->name, state_names[p->state],
+           p->burst_time, p->remaining_time,
+           p->priority, p->completion_percent);
 }
 
-void blockProcess(PCB *p) {
-    logTransition(p->pid, p->state, WAITING, p->remaining_time, p->progress);
-    p->state = WAITING;
-}
+void changeState(Process *p, State new_state) {
+    const char *state_names[] = {
+        "NEW","READY","RUNNING","WAITING",
+        "SUSP_READY","SUSP_WAITING","TERMINATED"
+    };
 
-void suspendReady(PCB *p) {
-    logTransition(p->pid, p->state, SUSP_READY, p->remaining_time, p->progress);
-    p->state = SUSP_READY;
-}
+    p->leave_time = time(NULL);
+    printf("\n🕒 [%s] Process %s leaving %s\n",
+           getTimeStr(), p->name, state_names[p->state]);
 
-void suspendWaiting(PCB *p) {
-    logTransition(p->pid, p->state, SUSP_WAITING, p->remaining_time, p->progress);
-    p->state = SUSP_WAITING;
-}
+    p->enter_time = time(NULL);
+    p->state = new_state;
+    printf("🕒 [%s] Process %s entering %s\n",
+           getTimeStr(), p->name, state_names[new_state]);
 
-void terminateProcess(PCB *p) {
-    p->progress = 100.0;
-    p->remaining_time = 0;
-    logTransition(p->pid, p->state, TERMINATED, p->remaining_time, p->progress);
-    p->state = TERMINATED;
+    if (new_state == RUNNING) {
+        p->completion_percent += rand() % 30;
+        if (p->completion_percent > 100) p->completion_percent = 100;
+        p->remaining_time -= rand() % 3;
+        if (p->remaining_time < 0) p->remaining_time = 0;
+    }
+
+    displayPCB(p);
 }

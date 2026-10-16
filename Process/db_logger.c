@@ -1,33 +1,12 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <libpq-fe.h>
-#include "db_logger.h"
+#include "process.h"
 
-// Function to log a process transition into PostgreSQL
-void logTransition(int pid, State oldState, State newState, int remaining, float progress) {
-    // Connect to PostgreSQL
-    PGconn *conn = PQconnectdb("host=localhost dbname=cloud_resource_os user=postgres password=kashish");
-
-    if (PQstatus(conn) != CONNECTION_OK) {
-        fprintf(stderr, "Connection failed: %s\n", PQerrorMessage(conn));
-        PQfinish(conn);
-        return;
-    }
-
-    // Build SQL query
-    char query[512];
-    snprintf(query, sizeof(query),
-        "INSERT INTO process_log (pid, old_state, new_state, remaining_time, progress) "
-        "VALUES (%d, '%d', '%d', %d, %.2f);",
-        pid, oldState, newState, remaining, progress);
-
-    // Execute query
-    PGresult *res = PQexec(conn, query);
-    if (PQresultStatus(res) != PGRES_COMMAND_OK) {
-        fprintf(stderr, "Insert failed: %s\n", PQerrorMessage(conn));
-    }
-
-    // Cleanup
-    PQclear(res);
-    PQfinish(conn);
+void logProcessResult(Process *p) {
+    FILE *fp = fopen("process_results.csv", "a");
+    if (!fp) return;
+    fprintf(fp, "%d,%s,%d,%d,%d,%d,%s\n",
+            p->pid, p->name, p->burst_time,
+            p->completion_time, p->turnaround_time,
+            p->waiting_time, p->algorithm_used);
+    fclose(fp);
 }

@@ -1,7 +1,7 @@
 #include "process.h"
 #include <stdio.h>
 
-void printGanttChart(PCB processes[], int n) {
+void printGanttChart(Process processes[], int n) {
     printf("\nGantt Chart:\n");
     int time = 0;
     for (int i = 0; i < n; i++) {

@@ -3,6 +3,6 @@
 
 #include "process.h"
 
-void printGanttChart(PCB processes[], int n);
+void printGanttChart(Process processes[], int n);
 
 #endif

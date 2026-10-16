@@ -1,29 +1,35 @@
 #ifndef PROCESS_H
 #define PROCESS_H
 
-typedef enum 
-{
-    NEW, READY, RUNNING, WAITING, SUSP_READY, SUSP_WAITING, TERMINATED
+#include <time.h>
+
+typedef enum {
+    NEW, READY, RUNNING, WAITING,
+    SUSP_READY, SUSP_WAITING, TERMINATED
 } State;
 
-typedef struct 
-{
+typedef struct {
     int pid;
-    State state;
-    int priority;
+    char name[10];
+    int arrival_time;
     int burst_time;
     int remaining_time;
-    int arrival_time;
+    int priority;
     int completion_time;
-    float progress;   // % completed
-} PCB;
+    int turnaround_time;
+    int waiting_time;
+    int start_time;
+    int response_time;
+    float progress;
+    int completion_percent;
+    State state;
+    time_t enter_time;
+    time_t leave_time;
+    char algorithm_used[20];
+} Process;
 
-
-void admitProcess(PCB *p);
-void dispatchProcess(PCB *p);
-void blockProcess(PCB *p);
-void suspendReady(PCB *p);
-void suspendWaiting(PCB *p);
-void terminateProcess(PCB *p);
+char* getTimeStr();
+void displayPCB(Process *p);
+void changeState(Process *p, State new_state);
 
 #endif
